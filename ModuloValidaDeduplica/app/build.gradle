@@ -16,13 +16,15 @@ repositories {
 }
 
 dependencies {
-   // Use JUnit Jupiter for testing.
+    // Use JUnit Jupiter for testing.
     testImplementation 'org.junit.jupiter:junit-jupiter:5.9.2'
  
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-  // RabbitMQ Java Client
+    // RabbitMQ Java Client
     implementation 'com.rabbitmq:amqp-client:5.16.0' // O la versión más actualizada
-implementation 'ch.qos.logback:logback-classic:1.2.5' // O la versión más reciente
+    implementation 'ch.qos.logback:logback-classic:1.2.5' // O la versión más reciente
+ 
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.16.0'
 
     // JSON Simple
     implementation 'com.googlecode.json-simple:json-simple:1.1.1' // O la versión más actualizada

@@ -3,18 +3,24 @@
  */
 package ModuloValidaDeduplica;
 
+import Dtos.FormularioCampos;
 import QueueModules.RabitConnection;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.BufferedReader;
+import java.io.*;
+
+import java.lang.reflect.Field;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class App  implements Runnable {
-     private RabitConnection conexionRabbit;
+public class App implements Runnable {
+
+    private RabitConnection conexionRabbit;
 
     public App(RabitConnection conexionRabbit) {
         this.conexionRabbit = conexionRabbit;
@@ -28,14 +34,10 @@ public class App  implements Runnable {
                 String formularioJSON;
                 formularioJSON = conexionRabbit.recibirMensaje("CapturaDeDatos");
 
-                // Validar formulario y verificar duplicación
-                boolean esValido = validarFormulario(formularioJSON);
-                boolean esDuplicado = verificarDuplicado(formularioJSON);
-
                 // Procesar el formulario
-                if (!esValido) {
+                if (!validarFormulario(formularioJSON)) {
                     almacenarFormularioInvalido(formularioJSON);
-                } else if (esDuplicado) {
+                } else if (verificarDuplicado(formularioJSON)) {
                     almacenarFormularioDuplicado(formularioJSON);
                 } else {
                     enviarDatosAlmacenamiento(formularioJSON);
@@ -46,11 +48,31 @@ public class App  implements Runnable {
         }
     }
 
+    private boolean camposSonValidos(Object obj) throws IllegalAccessException {
+        for (Field field : obj.getClass().getDeclaredFields()) {
+            field.setAccessible(true);
+            Object value = field.get(obj);
+            if (value == null) {
+                return false; // Si encuentra un campo null, retorna false
+            }
+        }
+        return true; // Si todos los campos son diferentes de null, retorna true
+    }
+
     private boolean validarFormulario(String formularioJSON) {
-        // Lógica de validación del formulario (completitud, reglas definidas, etc.)
-        // Retorna true si es válido, false si no lo es
-        // Ejemplo básico: validar si contiene la clave "Cédula" y si su valor es numérico
-        return formularioJSON.contains("\"Cédula\"") && formularioJSON.matches(".*\"Cédula\":\\s*\\d+");
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            FormularioCampos campos = objectMapper.readValue(formularioJSON, FormularioCampos.class);
+
+            if (!camposSonValidos(campos)) {
+                return false;
+            }
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false; // Manejo de errores al parsear el JSON
+        }
+
     }
 
     private boolean verificarDuplicado(String formularioJSON) {
@@ -58,6 +80,38 @@ public class App  implements Runnable {
         // Retorna true si está duplicado, false si no lo está
         // (Debes implementar la lógica de verificación de duplicados con tu sistema de almacenamiento)
         return false;
+    }
+
+    private void enviarPost(String jsonData, String endpointUrl) {
+        try {
+            URL url = new URL(endpointUrl);
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+
+            // Configurar la conexión HTTP
+            con.setRequestMethod("POST");
+            con.setRequestProperty("Content-Type", "application/json"); // Configurar el Content-Type como application/json
+            con.setDoOutput(true);
+
+            // Enviar los datos JSON
+            try (DataOutputStream wr = new DataOutputStream(con.getOutputStream())) {
+                wr.writeBytes(jsonData);
+                wr.flush();
+            }
+
+            // Leer la respuesta del servidor (opcional)
+            int responseCode = con.getResponseCode();
+            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+            String inputLine;
+            StringBuilder response = new StringBuilder();
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+            in.close();
+
+            // Puedes utilizar 'responseCode' y 'response.toString()' para manejar la respuesta del servidor
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void almacenarFormularioInvalido(String formularioJSON) {
@@ -71,8 +125,8 @@ public class App  implements Runnable {
     }
 
     private void enviarDatosAlmacenamiento(String formularioJSON) {
-        // Enviar datos por medio de API REST al módulo de almacenamiento
-        // (Implementar lógica para enviar los datos al sistema de almacenamiento)
+       enviarPost(formularioJSON, "http://localhost:4545/formularios");
+
     }
 
     public static void crearDirectorioSiNoExiste(String rutaArchivo) {
