@@ -5,10 +5,9 @@
 package com.example.almacenamiento.Models;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.databind.util.JSONPObject;
 import jakarta.validation.constraints.NotBlank;
-import java.lang.reflect.*;
 import java.util.Date;
+import java.util.Objects;
 
 
 /**
@@ -38,6 +37,104 @@ public class FormularioCampos {
     private String colorOjos;
     private String colorPelo;
     private String hobbies;
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 47 * hash + Objects.hashCode(this.nombre);
+        hash = 47 * hash + Objects.hashCode(this.apellido);
+        hash = 47 * hash + this.edad;
+        hash = 47 * hash + Objects.hashCode(this.direccion);
+        hash = 47 * hash + Objects.hashCode(this.telefono);
+        hash = 47 * hash + Objects.hashCode(this.cedula);
+        hash = 47 * hash + Objects.hashCode(this.ocupacion);
+        hash = 47 * hash + Objects.hashCode(this.estadoCivil);
+        hash = 47 * hash + Objects.hashCode(this.genero);
+        hash = 47 * hash + Objects.hashCode(this.email);
+        hash = 47 * hash + Objects.hashCode(this.fechaNacimiento);
+        hash = 47 * hash + Objects.hashCode(this.pais);
+        hash = 47 * hash + Objects.hashCode(this.ciudadNacimiento);
+        hash = 47 * hash + Objects.hashCode(this.nacionalidad);
+        hash = 47 * hash + Objects.hashCode(this.grupoSanguineo);
+        hash = 47 * hash + (int) (Double.doubleToLongBits(this.peso) ^ (Double.doubleToLongBits(this.peso) >>> 32));
+        hash = 47 * hash + (int) (Double.doubleToLongBits(this.altura) ^ (Double.doubleToLongBits(this.altura) >>> 32));
+        hash = 47 * hash + Objects.hashCode(this.colorOjos);
+        hash = 47 * hash + Objects.hashCode(this.colorPelo);
+        hash = 47 * hash + Objects.hashCode(this.hobbies);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final FormularioCampos other = (FormularioCampos) obj;
+        if (this.edad != other.edad) {
+            return false;
+        }
+        if (Double.doubleToLongBits(this.peso) != Double.doubleToLongBits(other.peso)) {
+            return false;
+        }
+        if (Double.doubleToLongBits(this.altura) != Double.doubleToLongBits(other.altura)) {
+            return false;
+        }
+        if (!Objects.equals(this.nombre, other.nombre)) {
+            return false;
+        }
+        if (!Objects.equals(this.apellido, other.apellido)) {
+            return false;
+        }
+        if (!Objects.equals(this.direccion, other.direccion)) {
+            return false;
+        }
+        if (!Objects.equals(this.telefono, other.telefono)) {
+            return false;
+        }
+        if (!Objects.equals(this.cedula, other.cedula)) {
+            return false;
+        }
+        if (!Objects.equals(this.ocupacion, other.ocupacion)) {
+            return false;
+        }
+        if (!Objects.equals(this.estadoCivil, other.estadoCivil)) {
+            return false;
+        }
+        if (!Objects.equals(this.genero, other.genero)) {
+            return false;
+        }
+        if (!Objects.equals(this.email, other.email)) {
+            return false;
+        }
+        if (!Objects.equals(this.pais, other.pais)) {
+            return false;
+        }
+        if (!Objects.equals(this.ciudadNacimiento, other.ciudadNacimiento)) {
+            return false;
+        }
+        if (!Objects.equals(this.nacionalidad, other.nacionalidad)) {
+            return false;
+        }
+        if (!Objects.equals(this.grupoSanguineo, other.grupoSanguineo)) {
+            return false;
+        }
+        if (!Objects.equals(this.colorOjos, other.colorOjos)) {
+            return false;
+        }
+        if (!Objects.equals(this.colorPelo, other.colorPelo)) {
+            return false;
+        }
+        if (!Objects.equals(this.hobbies, other.hobbies)) {
+            return false;
+        }
+        return Objects.equals(this.fechaNacimiento, other.fechaNacimiento);
+    }
     
     
 

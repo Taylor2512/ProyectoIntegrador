@@ -1,9 +1,11 @@
 package com.example.almacenamiento.controllers;
 
+import com.example.almacenamiento.Models.Dtos.ApiResponse;
 import com.example.almacenamiento.Models.FormularioCampos;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
@@ -20,118 +22,155 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/formularios")
 public class FormularioController {
-    private final String directorio = "directorio_de_archivos"; // Ruta donde se guardarán los archivos
 
- @PostMapping
-public ResponseEntity<String> guardarFormulario(@RequestBody FormularioCampos formulario) {
-    try {
-        ObjectMapper mapper = new ObjectMapper();
-        String jsonFormulario = mapper.writeValueAsString(formulario);
+    private final String directorio = "C://Files"; // Ruta donde se guardarán los archivos
 
-        // Verificar si el formulario ya existe
-        if (formularioDuplicado(formulario)) {
-            // Si el formulario está duplicado, almacenarlo en una carpeta diferente
-            // (puedes ajustar la lógica para guardar en una carpeta diferente)
-            String nombreArchivoDuplicado = "formulario_duplicado_" + UUID.randomUUID().toString() + ".json";
-            Files.write(Paths.get(directorio, "duplicados", nombreArchivoDuplicado), jsonFormulario.getBytes());
-            
-            return new ResponseEntity<>("Formulario duplicado, almacenado en carpeta de duplicados", HttpStatus.BAD_REQUEST);
-        } else {
-            // Si el formulario no está duplicado, proceder con el guardado normal
-            String nombreArchivo = "formulario_" + UUID.randomUUID().toString() + ".json";
-            Files.write(Paths.get(directorio, nombreArchivo), jsonFormulario.getBytes());
+    @PostMapping("/guardarFormulario")
+    public ResponseEntity<ApiResponse> guardarFormulario(@RequestBody FormularioCampos formulario) {
+        ApiResponse response = new ApiResponse();
 
-            return new ResponseEntity<>("Formulario guardado como " + nombreArchivo, HttpStatus.CREATED);
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            String jsonFormulario = mapper.writeValueAsString(formulario);
+
+            // Verificar si el formulario está duplicado
+            if (formularioDuplicado(formulario)) {
+                // Si está duplicado, maneja la lógica correspondiente
+                // ...
+
+                response.setSuccess(false);
+                response.setStatusCode(HttpStatus.BAD_REQUEST.value());
+                response.setMessage("Formulario duplicado, almacenado en carpeta de duplicados");
+                // Añade más detalles según tu necesidad a data o errors si es relevante
+            } else {
+                // Si no está duplicado, procede con el guardado normal
+                String nombreArchivo = "formulario_" + UUID.randomUUID().toString() + ".json";
+                Files.write(Paths.get(directorio + "/Validos", nombreArchivo), jsonFormulario.getBytes());
+
+                response.setSuccess(true);
+                response.setStatusCode(HttpStatus.CREATED.value());
+                response.setMessage("Formulario guardado como " + nombreArchivo);
+                // Puedes añadir más detalles a data si es necesario
+            }
+        } catch (IOException e) {
+            response.setSuccess(false);
+            response.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.setMessage("Error al guardar el formulario: " + e.getMessage());
+            // Puedes agregar más detalles o errores si es necesario
         }
-    } catch (IOException e) {
-        e.printStackTrace();
-        return new ResponseEntity<>("Error al guardar el formulario", HttpStatus.INTERNAL_SERVER_ERROR);
+
+        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatusCode()));
     }
-}
 
-private boolean formularioDuplicado(FormularioCampos formulario) {
-    // Lógica para verificar si el formulario está duplicado
-    // Puedes implementar la búsqueda del formulario en el sistema de almacenamiento
-    // y comparar si ya existe un formulario con los mismos datos
-    // Devuelve true si está duplicado, false si no lo está (esto es un ejemplo básico)
-    // Aquí podrías utilizar la lógica específica para tu sistema de archivos/local
-    // para buscar si ya existe un formulario similar en el directorio
+    private boolean formularioDuplicado(FormularioCampos formulario) {
+        // Lógica para verificar si el formulario está duplicado
+        // Puedes implementar la búsqueda del formulario en el sistema de almacenamiento
+        // y comparar si ya existe un formulario con los mismos datos
+        // Devuelve true si está duplicado, false si no lo está (esto es un ejemplo básico)
+        // Aquí podrías utilizar la lógica específica para tu sistema de archivos/local
+        // para buscar si ya existe un formulario similar en el directorio
 
-    // Por ejemplo:
-    // Supongamos que tienes una lista de formularios guardados en archivos en el directorio
-    List<FormularioCampos> formulariosGuardados = obtenerTodosLosFormulariosGuardados();
-    
-    for (FormularioCampos formGuardado : formulariosGuardados) {
-        if (formGuardado.equals(formulario)) {
-            return true; // El formulario está duplicado
+        // Por ejemplo:
+        // Supongamos que tienes una lista de formularios guardados en archivos en el directorio
+        List<FormularioCampos> formulariosGuardados = obtenerTodosLosFormulariosGuardados();
+
+        for (FormularioCampos formGuardado : formulariosGuardados) {
+            if (formGuardado.equals(formulario)) {
+                return true; // El formulario está duplicado
+            }
         }
-    }
-    
-    return false; // El formulario no está duplicado
-}
 
-private List<FormularioCampos> obtenerTodosLosFormulariosGuardados() {
-  
-    List<FormularioCampos> formularios = new ArrayList<>();
-    try {
-        Files.list(Paths.get(directorio))
-                .filter(Files::isRegularFile)
-                .forEach(file -> {
-                    try {
-                        byte[] bytes = Files.readAllBytes(file);
-                        String jsonFormulario = new String(bytes);
-                        ObjectMapper mapper = new ObjectMapper();
-                        FormularioCampos formulario = mapper.readValue(jsonFormulario, FormularioCampos.class);
-                        formularios.add(formulario);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                });
-    } catch (IOException e) {
-        e.printStackTrace();
+        return false; // El formulario no está duplicado
     }
-    
-    return formularios;
-}
+
+    private List<FormularioCampos> obtenerTodosLosFormulariosGuardados() {
+
+        List<FormularioCampos> formularios = new ArrayList<>();
+        try {
+            Files.list(Paths.get(directorio + "/Validos"))
+                    .filter(Files::isRegularFile)
+                    .forEach((Path file) -> {
+                        try {
+                            byte[] bytes = Files.readAllBytes(file);
+                            String jsonFormulario = new String(bytes);
+                            ObjectMapper mapper = new ObjectMapper();
+                            FormularioCampos formulario = mapper.readValue(jsonFormulario, FormularioCampos.class);
+                            formularios.add(formulario);
+                        } catch (IOException e) {
+                        }
+                    });
+        } catch (IOException e) {
+        }
+
+        return formularios;
+    }
+
     @DeleteMapping("/{nombreArchivo}")
-    public ResponseEntity<String> eliminarFormulario(@PathVariable String nombreArchivo) {
+    public ResponseEntity<ApiResponse> eliminarFormulario(@PathVariable String nombreArchivo) {
+        ApiResponse response = new ApiResponse();
+
         try {
             Files.deleteIfExists(Paths.get(directorio, nombreArchivo));
-            return new ResponseEntity<>("Formulario eliminado: " + nombreArchivo, HttpStatus.OK);
+            response.setSuccess(true);
+            response.setStatusCode(HttpStatus.OK.value());
+            response.setMessage("Formulario eliminado: " + nombreArchivo);
         } catch (IOException e) {
             e.printStackTrace();
-            return new ResponseEntity<>("Error al eliminar el formulario", HttpStatus.INTERNAL_SERVER_ERROR);
+            response.setSuccess(false);
+            response.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.setMessage("Error al eliminar el formulario");
+            response.setErrors(Collections.singletonList(e.getMessage()));
         }
+
+        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatusCode()));
     }
 
     @PutMapping("/{nombreArchivo}")
-    public ResponseEntity<String> reemplazarFormulario(@PathVariable String nombreArchivo, @RequestBody FormularioCampos formulario) {
+    public ResponseEntity<ApiResponse> reemplazarFormulario(@PathVariable String nombreArchivo, @RequestBody FormularioCampos formulario) {
+        ApiResponse response = new ApiResponse();
+
         try {
             ObjectMapper mapper = new ObjectMapper();
             String jsonFormulario = mapper.writeValueAsString(formulario);
 
             Files.write(Paths.get(directorio, nombreArchivo), jsonFormulario.getBytes(), StandardOpenOption.TRUNCATE_EXISTING);
-            
-            return new ResponseEntity<>("Formulario reemplazado: " + nombreArchivo, HttpStatus.OK);
+
+            response.setSuccess(true);
+            response.setStatusCode(HttpStatus.OK.value());
+            response.setMessage("Formulario reemplazado: " + nombreArchivo);
         } catch (IOException e) {
-            e.printStackTrace();
-            return new ResponseEntity<>("Error al reemplazar el formulario", HttpStatus.INTERNAL_SERVER_ERROR);
+            response.setSuccess(false);
+            response.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.setMessage("Error al reemplazar el formulario");
+            response.setErrors(Collections.singletonList(e.getMessage()));
         }
+
+        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatusCode()));
     }
 
     @GetMapping("/{nombreArchivo}")
-    public ResponseEntity<String> obtenerFormulario(@PathVariable String nombreArchivo) {
+    public ResponseEntity<ApiResponse> obtenerFormulario(@PathVariable String nombreArchivo) {
+        ApiResponse response = new ApiResponse();
+
         try {
             String contenido = new String(Files.readAllBytes(Paths.get(directorio, nombreArchivo)));
-            return new ResponseEntity<>(contenido, HttpStatus.OK);
+            response.setSuccess(true);
+            response.setStatusCode(HttpStatus.OK.value());
+            response.setData(contenido);
         } catch (IOException e) {
-            e.printStackTrace();
-            return new ResponseEntity<>("Error al obtener el formulario", HttpStatus.INTERNAL_SERVER_ERROR);
+            response.setSuccess(false);
+            response.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.setMessage("Error al obtener el formulario");
+            response.setErrors(Collections.singletonList(e.getMessage()));
         }
+
+        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatusCode()));
     }
 
     @GetMapping("/todos")
-    public ResponseEntity<List<String>> obtenerTodosFormularios() {
+    public ResponseEntity<ApiResponse> obtenerTodosFormularios() {
+        ApiResponse response = new ApiResponse();
+
         try {
             List<String> formularios = new ArrayList<>();
             Files.list(Paths.get(directorio))
@@ -140,16 +179,20 @@ private List<FormularioCampos> obtenerTodosLosFormulariosGuardados() {
                         try {
                             formularios.add(file.getFileName().toString());
                         } catch (Exception e) {
-                            e.printStackTrace();
                         }
                     });
 
-            return new ResponseEntity<>(formularios, HttpStatus.OK);
+            response.setSuccess(true);
+            response.setStatusCode(HttpStatus.OK.value());
+            response.setData(formularios);
         } catch (IOException e) {
-            e.printStackTrace();
-            return new ResponseEntity<>(Collections.emptyList(), HttpStatus.INTERNAL_SERVER_ERROR);
+            response.setSuccess(false);
+            response.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.setMessage("Error al obtener los formularios");
+            response.setErrors(Collections.singletonList(e.getMessage()));
         }
-    }
 
+        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatusCode()));
+    }
     // Implementa otros métodos según la lógica de tu aplicación para operaciones adicionales y replicación de datos
 }

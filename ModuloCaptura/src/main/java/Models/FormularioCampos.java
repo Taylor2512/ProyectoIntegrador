@@ -7,14 +7,18 @@ package Models;
 import java.lang.reflect.*;
 import java.util.Date;
 import org.json.simple.JSONObject;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.validation.constraints.NotBlank;
+import java.util.Date;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  *
  * @author jt251
  */
 public class FormularioCampos {
-                           
-     private String nombre;
+
+    private String nombre;
     private String apellido;
     private int edad;
     private String direccion;
@@ -25,6 +29,7 @@ public class FormularioCampos {
     private String genero;
 
     private String email;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSZ")
     private Date fechaNacimiento;
     private String pais;
     private String ciudadNacimiento;
@@ -35,23 +40,16 @@ public class FormularioCampos {
     private String colorOjos;
     private String colorPelo;
     private String hobbies;
-    
-    
-    public JSONObject toJSON() {
-        JSONObject formularioJSON = new JSONObject();
-        Field[] campos = FormularioCampos.class.getDeclaredFields();
 
-        for (Field campo : campos) {
-            campo.setAccessible(true);
-            try {
-                formularioJSON.put(campo.getName(), campo.get(this));
-            } catch (IllegalAccessException e) {
-            }
+    public String toJSON() {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.writeValueAsString(this);
+        } catch (Exception e) {
+            // Manejar la excepción si es necesario
+            return "{}"; // Otra alternativa en caso de error
         }
-
-        return formularioJSON;
     }
-
     public String getNombre() {
         return nombre;
     }
