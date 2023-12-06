@@ -1,5 +1,6 @@
-package com.example.demo;
+package com.example.almacenamiento.controllers;
 
+import com.example.almacenamiento.Models.FormularioCampos;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.nio.file.Files;

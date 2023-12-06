@@ -2,9 +2,9 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package ValidationModule;
+package com.example.almacenamiento.ValidationModule;
 
-import com.example.demo.FormularioCampos;
+import com.example.almacenamiento.Models.FormularioCampos;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.nio.file.Files;
 import java.nio.file.Paths;

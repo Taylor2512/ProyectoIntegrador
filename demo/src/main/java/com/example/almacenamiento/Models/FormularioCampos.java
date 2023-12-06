@@ -2,8 +2,9 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package com.example.demo;
+package com.example.almacenamiento.Models;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.util.JSONPObject;
 import jakarta.validation.constraints.NotBlank;
 import java.lang.reflect.*;
@@ -26,6 +27,7 @@ public class FormularioCampos {
     private String estadoCivil;
     private String genero;
     private String email;
+   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSZ")
     private Date fechaNacimiento;
     private String pais;
     private String ciudadNacimiento;
